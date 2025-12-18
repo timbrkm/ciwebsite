@@ -1,79 +1,63 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Facebook, MapPin, Clock, Phone, Mail } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const Footer: React.FC = () => {
   const containerRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const bgTextRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const [key, setKey] = useState(0);
 
-  // Force re-render when route changes
+  // Use useEffect to trigger animation on route change
   useEffect(() => {
-    setKey(prev => prev + 1);
-  }, [location.pathname]);
+    const columns = gridRef.current?.querySelectorAll('.footer-col');
 
-  useGSAP(() => {
-    // Small delay to ensure DOM is ready after route change
+    // Reset opacity immediately
+    if (columns) {
+      gsap.set(columns, { opacity: 0, y: 40 });
+    }
+    if (bgTextRef.current) {
+      gsap.set(bgTextRef.current, { opacity: 0, x: 100 });
+    }
+
+    // Animate after a short delay
     const timer = setTimeout(() => {
-      ScrollTrigger.refresh();
-
-      // Stagger animation for footer columns
-      const columns = gridRef.current?.querySelectorAll('.footer-col');
       if (columns) {
-        gsap.fromTo(columns,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            ease: "power2.out",
-            stagger: 0.15,
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top bottom",
-              toggleActions: "play none none none"
-            }
-          }
-        );
+        gsap.to(columns, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power2.out",
+          stagger: 0.15
+        });
       }
 
-      // Background text animation
-      gsap.fromTo(containerRef.current?.querySelector('.bg-text'),
-        { opacity: 0, x: 100 },
-        {
+      if (bgTextRef.current) {
+        gsap.to(bgTextRef.current, {
           opacity: 0.02,
           x: 0,
           duration: 1.5,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top bottom",
-            toggleActions: "play none none none"
-          }
-        }
-      );
-    }, 100);
+          ease: "power2.out"
+        });
+      }
+    }, 150);
 
     return () => clearTimeout(timer);
-  }, { scope: containerRef, dependencies: [key] });
+  }, [location.pathname]);
 
   return (
     <footer ref={containerRef} id="footer" className="bg-skate-black border-t border-white/10 pt-20 pb-10 relative overflow-hidden">
       {/* Background Graphic */}
-      <div className="bg-text absolute top-0 right-0 font-headline text-[20rem] text-white opacity-0 leading-none pointer-events-none select-none">
+      <div ref={bgTextRef} className="absolute top-0 right-0 font-headline text-[20rem] text-white opacity-0 leading-none pointer-events-none select-none">
         CI
       </div>
 
       <div ref={gridRef} className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
 
         {/* Brand */}
-        <div className="footer-col md:col-span-1 opacity-0">
+        <div className="footer-col md:col-span-1">
           <h2 className="text-7xl font-headline text-white uppercase italic tracking-tighter">C.I.</h2>
           <p className="mt-4 text-gray-400 font-body text-lg">
             CHECK IN.<br/>
@@ -87,7 +71,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Location */}
-        <div className="footer-col md:col-span-1 opacity-0">
+        <div className="footer-col md:col-span-1">
           <h3 className="text-xl font-headline text-white uppercase mb-6 flex items-center tracking-widest">
             <MapPin className="mr-2 text-skate-red" size={18} /> Location
           </h3>
@@ -100,7 +84,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Contact */}
-        <div className="footer-col md:col-span-1 opacity-0">
+        <div className="footer-col md:col-span-1">
           <h3 className="text-xl font-headline text-white uppercase mb-6 flex items-center tracking-widest">
             <Mail className="mr-2 text-skate-red" size={18} /> Contact
           </h3>
@@ -115,7 +99,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Hours */}
-        <div className="footer-col md:col-span-1 opacity-0">
+        <div className="footer-col md:col-span-1">
           <h3 className="text-xl font-headline text-white uppercase mb-6 flex items-center tracking-widest">
             <Clock className="mr-2 text-skate-accent" size={18} /> Hours
           </h3>
